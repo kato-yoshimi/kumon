@@ -1,0 +1,122 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>国語CII漢字 - もくじ</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Klee+One:wght@400;600&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --bg: #e9f1f7;
+    --card: #ffffff;
+    --ink: #1b2a41;
+    --navy: #23395b;
+    --teal: #2a9d8f;
+    --amber: #f2b134;
+    --muted: #6b7a90;
+  }
+  * { box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
+  html, body { height: 100%; margin: 0; }
+  body {
+    background: var(--bg);
+    color: var(--ink);
+    font-family: "Klee One", "UD デジタル 教科書体 N-R", "UD Digi Kyokasho N-R", "Yu Kyokasho", "Hiragino Maru Gothic ProN", "Noto Sans JP", sans-serif;
+    font-weight: 600;
+  }
+  #app {
+    max-width: 640px;
+    margin: 0 auto;
+    padding: 20px 14px;
+    display: flex;
+    flex-direction: column;
+    gap: 16px;
+    min-height: 100dvh;
+  }
+  header {
+    text-align: center;
+    background: var(--card);
+    border: 3px solid var(--navy);
+    border-radius: 20px;
+    padding: 16px;
+    box-shadow: 0 4px 0 rgba(0,0,0,0.1);
+  }
+  h1 {
+    margin: 0;
+    font-size: 1.6rem;
+    color: var(--navy);
+  }
+  p {
+    margin: 6px 0 0;
+    font-size: 0.9rem;
+    color: var(--muted);
+  }
+  .menu-list {
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+  }
+  .menu-item {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    background: var(--card);
+    border: 3px solid var(--navy);
+    border-radius: 16px;
+    padding: 16px 20px;
+    text-decoration: none;
+    color: var(--ink);
+    font-size: 1.25rem;
+    box-shadow: 0 4px 0 rgba(0,0,0,0.15);
+    transition: transform .06s, box-shadow .06s;
+  }
+  .menu-item:active {
+    transform: translateY(3px);
+    box-shadow: 0 1px 0 rgba(0,0,0,0.15);
+  }
+  .menu-item span {
+    font-size: 0.9rem;
+    color: var(--teal);
+    background: #e6f4f1;
+    padding: 4px 10px;
+    border-radius: 10px;
+  }
+  footer {
+    text-align: center;
+    font-size: 0.8rem;
+    color: var(--muted);
+    margin-top: auto;
+    padding: 10px 0;
+  }
+</style>
+</head>
+<body>
+<div id="app">
+  <header>
+    <h1>国語CII 漢字もくじ</h1>
+    <p>べんきょうしたい回をえらんでね！</p>
+  </header>
+
+  <div class="menu-list">
+    <!-- 💡 ここにリンクを自分で追加・編集していけます -->
+    <a href="app.html" class="menu-item">
+      第1回（サンプル）
+      <span>はじめる ❯</span>
+    </a>
+    
+    <!-- 例：あとから増やすときは下の行のコメントアウトを外すかコピペして使ってください -->
+    <!--
+    <a href="kanji2.html" class="menu-item">
+      第2回
+      <span>はじめる ❯</span>
+    </a>
+    -->
+  </div>
+
+  <footer>
+    Kanji Study App
+  </footer>
+</div>
+</body>
+</html>

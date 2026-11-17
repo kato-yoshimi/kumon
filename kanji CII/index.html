@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
-<title>かんじのよみかた</title>
+<title>かんじのよみかた - 国語CII</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Klee+One:wght@400;600&display=swap" rel="stylesheet">
@@ -96,26 +96,22 @@
   }
   .note { font-size: .8rem; color: var(--muted); text-align: center; min-height: 1.1em; margin: -4px 0 0; }
 
-  /* CSV読込＆シャッフルのバー */
+  /* シャッフル＆ステータスバー（読込ボタンは削除してすっきり） */
   .load-bar {
     display: flex;
     align-items: center;
+    justify-path: space-between;
     justify-content: space-between;
-    gap: 6px;
     background: #fff;
     border: 2px solid var(--navy);
     border-radius: 16px;
-    padding: 6px 10px;
-    font-size: 0.95rem;
+    padding: 6px 12px;
+    font-size: 0.9rem;
   }
-  .load-bar-btns {
-    display: flex;
-    gap: 6px;
-    flex-shrink: 0;
-  }
-  .b-mini {
+  .b-shuffle {
+    background: var(--purple);
     color: #fff;
-    padding: 6px 10px;
+    padding: 6px 14px;
     border-radius: 12px;
     cursor: pointer;
     font-size: 0.85rem;
@@ -124,12 +120,10 @@
     min-height: auto;
     white-space: nowrap;
   }
-  .b-mini:active {
+  .b-shuffle:active {
     transform: translateY(2px);
     box-shadow: none;
   }
-  .b-load { background: var(--teal); }
-  .b-shuffle { background: var(--purple); }
 
   /* ボタン */
   .pad { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
@@ -186,15 +180,12 @@
     <div class="yomi-area"><div class="yomi" id="yomi"></div></div>
     <div class="kanji-area"><div class="kanji" id="kanji">…</div></div>
   </div>
-  <p class="note" id="note"></p>
+  <p class="note" id="note">よみこみ中...</p>
 
-  <!-- 同じフォルダのkanji.csvを読み込む＆シャッフルボタン -->
+  <!-- ステータス表示とシャッフルボタン -->
   <div class="load-bar">
-    <span id="status-text" style="color: var(--muted); font-size: 0.8rem; overflow: hidden; text-overflow: ellipsis; white-space: nowrap;">サンプル表示中</span>
-    <div class="load-bar-btns">
-      <button class="b-mini b-shuffle" id="btn-shuffle">🔀 シャッフル</button>
-      <button class="b-mini b-load" id="btn-load-csv">📂 CSVよみこむ</button>
-    </div>
+    <span id="status-text" style="color: var(--muted); font-size: 0.85rem;">kanji.csvを自動よみこみ中</span>
+    <button class="b-shuffle" id="btn-shuffle">🔀 国語CIIシャッフル</button>
   </div>
 
   <div class="pad">
@@ -240,7 +231,7 @@
     kanji: $('kanji'), yomi: $('yomi'), count: $('count'), bar: $('bar'), note: $('note'),
     voice: $('btn-voice'), yomiBtn: $('btn-yomi'), prev: $('btn-prev'), next: $('btn-next'),
     auto: $('btn-auto'), stop: $('btn-stop'), interval: $('interval'), out: $('interval-out'),
-    loadBtn: $('btn-load-csv'), shuffleBtn: $('btn-shuffle'), statusText: $('status-text')
+    shuffleBtn: $('btn-shuffle'), statusText: $('status-text')
   };
 
   // ===== CSV解析（1列目:漢字、2列目:読み） =====
@@ -282,6 +273,34 @@
     return out;
   }
 
+  // ===== 自動読み込み処理 =====
+  async function autoLoadCSV() {
+    try {
+      const res = await fetch(CSV_FILE_PATH);
+      if (!res.ok) throw new Error('HTTP ' + res.status);
+      const text = await res.text();
+      const data = parseCSV(text);
+      
+      if (data.length > 0) {
+        items = data;
+        idx = 0;
+        showYomi = false;
+        el.statusText.textContent = "kanji.csv 読み込み完了";
+        el.note.textContent = `${data.length}問をよみこみました！`;
+        render();
+      } else {
+        throw new Error('データが見つかりません');
+      }
+    } catch (e) {
+      console.warn(e);
+      el.statusText.textContent = "サンプル表示中";
+      el.note.textContent = 'CSVがよめなかったのでサンプルを表示しています';
+      items = SAMPLE;
+      idx = 0;
+      render();
+    }
+  }
+
   // ===== シャッフル処理 =====
   function shuffleItems() {
     if (items.length <= 1) return;
@@ -298,33 +317,6 @@
   }
 
   el.shuffleBtn.addEventListener('click', shuffleItems);
-
-  // ===== 「CSVよみこむ」ボタンを押したときの処理 =====
-  el.loadBtn.addEventListener('click', async () => {
-    try {
-      el.statusText.textContent = "よみこみ中...";
-      const res = await fetch(CSV_FILE_PATH);
-      if (!res.ok) throw new Error('HTTP ' + res.status);
-      const text = await res.text();
-      const data = parseCSV(text);
-      
-      if (data.length > 0) {
-        items = data;
-        idx = 0;
-        showYomi = false;
-        stopAuto();
-        el.statusText.textContent = "kanji.csv 読み込み成功！";
-        el.note.textContent = `${data.length}問をよみこみました！`;
-        render();
-      } else {
-        throw new Error('データが見つかりません');
-      }
-    } catch (e) {
-      console.error(e);
-      el.statusText.textContent = "よみこみ失敗";
-      alert('「kanji.csv」が同じフォルダに見つからないか、中身の形式がちがいます。');
-    }
-  });
 
   // ===== 表示 =====
   function render() {
@@ -472,7 +464,8 @@
   el.interval.addEventListener('input', () => { el.out.textContent = el.interval.value + 'びょう'; });
   if ('speechSynthesis' in window) window.speechSynthesis.getVoices();
 
-  render();
+  // 🚀 ページを開いた瞬間に自動でCSVを読み込む
+  autoLoadCSV();
 </script>
 </body>
 </html>

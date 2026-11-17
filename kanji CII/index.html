@@ -1,0 +1,449 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>かんじのよみかた</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Klee+One:wght@400;600&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --bg: #e9f1f7;
+    --card: #ffffff;
+    --ink: #1b2a41;
+    --navy: #23395b;
+    --yomi: #d1495b;
+    --amber: #f2b134;
+    --teal: #2a9d8f;
+    --green: #3c9d5d;
+    --red: #d1495b;
+    --muted: #6b7a90;
+    --disabled: #c9d3de;
+  }
+  * { box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
+  html, body { height: 100%; margin: 0; }
+  body {
+    background: var(--bg);
+    color: var(--ink);
+    font-family: "Klee One", "UD デジタル 教科書体 N-R", "UD Digi Kyokasho N-R", "Yu Kyokasho", "Hiragino Maru Gothic ProN", "Noto Sans JP", sans-serif;
+    font-weight: 600;
+    user-select: none;
+    -webkit-user-select: none;
+  }
+  #app {
+    height: 100dvh;
+    max-width: 640px;
+    margin: 0 auto;
+    padding: calc(10px + env(safe-area-inset-top, 0px)) 14px calc(12px + env(safe-area-inset-bottom, 0px));
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+  }
+
+  /* 進みぐあい */
+  .top { display: flex; align-items: center; gap: 12px; }
+  .bar { flex: 1; height: 12px; background: #fff; border-radius: 6px; overflow: hidden; border: 2px solid var(--navy); }
+  .bar > i { display: block; height: 100%; width: 0; background: var(--amber); transition: width .25s; }
+  .count { font-size: 1.15rem; min-width: 4.5em; text-align: right; font-variant-numeric: tabular-nums; }
+
+  /* かんじカード */
+  .card {
+    flex: 1;
+    min-height: 0;
+    container-type: size;
+    background: var(--card);
+    border: 4px solid var(--navy);
+    border-radius: 24px;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    overflow: hidden;
+  }
+  .yomi-area {
+    height: 26%;
+    width: 100%;
+    display: flex;
+    align-items: flex-end;
+    justify-content: center;
+    padding: 0 3cqw;
+  }
+  .yomi {
+    color: var(--yomi);
+    font-size: min(calc(86cqw / var(--m, 1)), 16cqh);
+    line-height: 1.1;
+    white-space: nowrap;
+    visibility: hidden;
+    opacity: 0;
+    transform: translateY(8px);
+    transition: opacity .2s, transform .2s;
+  }
+  .yomi.on { visibility: visible; opacity: 1; transform: none; }
+  .kanji-area {
+    flex: 1;
+    width: 100%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 0 3cqw;
+  }
+  .kanji {
+    font-size: min(calc(72cqw / var(--n, 1)), 52cqh);
+    line-height: 1.1;
+    white-space: nowrap;
+    font-weight: 600;
+  }
+  .note { font-size: .8rem; color: var(--muted); text-align: center; min-height: 1.1em; margin: -4px 0 0; }
+
+  /* CSV読込ボタンのバー */
+  .load-bar {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    background: #fff;
+    border: 2px solid var(--navy);
+    border-radius: 16px;
+    padding: 6px 12px;
+    font-size: 0.95rem;
+  }
+  .b-load {
+    background: var(--teal);
+    color: #fff;
+    padding: 6px 14px;
+    border-radius: 12px;
+    cursor: pointer;
+    font-size: 0.9rem;
+    border: none;
+    box-shadow: 0 2px 0 rgba(0,0,0,0.15);
+    min-height: auto;
+  }
+  .b-load:active {
+    transform: translateY(2px);
+    box-shadow: none;
+  }
+
+  /* ボタン */
+  .pad { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
+  button {
+    font: inherit;
+    font-size: 1.35rem;
+    border: 0;
+    border-radius: 18px;
+    min-height: 58px;
+    padding: 6px 10px;
+    color: #fff;
+    cursor: pointer;
+    box-shadow: 0 4px 0 rgba(0,0,0,.22);
+    transition: transform .06s, box-shadow .06s;
+  }
+  button:active:not(:disabled) { transform: translateY(3px); box-shadow: 0 1px 0 rgba(0,0,0,.22); }
+  button:focus-visible { outline: 4px solid var(--amber); outline-offset: 2px; }
+  button:disabled { background: var(--disabled) !important; color: #fff; box-shadow: none; cursor: default; }
+  .b-voice { background: var(--teal); }
+  .b-yomi  { background: var(--amber); color: var(--ink); }
+  .b-prev  { background: #fff; color: var(--navy); border: 3px solid var(--navy); }
+  .b-prev:disabled { border-color: var(--disabled); color: var(--disabled); background: #fff !important; }
+  .b-next  { background: var(--navy); }
+  .b-auto  { background: var(--green); }
+  .b-stop  { background: var(--red); }
+
+  .interval {
+    display: flex; align-items: center; gap: 10px;
+    background: #fff; border-radius: 18px; padding: 8px 14px;
+    border: 2px solid var(--navy);
+    font-size: 1.1rem;
+  }
+  .interval input { flex: 1; min-width: 0; height: 36px; accent-color: var(--navy); }
+  .interval output { min-width: 3.6em; text-align: right; font-variant-numeric: tabular-nums; }
+
+  @media (max-height: 560px) {
+    #app { gap: 6px; }
+    button { min-height: 46px; font-size: 1.1rem; }
+    .interval { padding: 2px 12px; }
+  }
+  @media (prefers-reduced-motion: reduce) {
+    * { transition: none !important; }
+  }
+</style>
+</head>
+<body>
+<div id="app">
+  <div class="top">
+    <div class="bar"><i id="bar"></i></div>
+    <div class="count" id="count">- / -</div>
+  </div>
+
+  <div class="card">
+    <div class="yomi-area"><div class="yomi" id="yomi"></div></div>
+    <div class="kanji-area"><div class="kanji" id="kanji">…</div></div>
+  </div>
+  <p class="note" id="note"></p>
+
+  <!-- 同じフォルダのkanji.csvを読み込むボタン -->
+  <div class="load-bar">
+    <span id="status-text" style="color: var(--muted); font-size: 0.85rem;">サンプルデータ表示中</span>
+    <button class="b-load" id="btn-load-csv">📂 kanji.csvをよみこむ</button>
+  </div>
+
+  <div class="pad">
+    <button class="b-voice" id="btn-voice">🔊 おと</button>
+    <button class="b-yomi" id="btn-yomi">よみ</button>
+    <button class="b-prev" id="btn-prev">◀ まえへ</button>
+    <button class="b-next" id="btn-next">つぎへ ▶</button>
+    <button class="b-auto" id="btn-auto">▶ じどう</button>
+    <button class="b-stop" id="btn-stop">■ とめる</button>
+  </div>
+
+  <label class="interval">
+    <span>まつ</span>
+    <input type="range" id="interval" min="0" max="15" step="1" value="1" aria-label="まつ時間（秒）">
+    <output id="interval-out">1びょう</output>
+  </label>
+</div>
+
+<script>
+  // ===== 設定 =====
+  const CSV_FILE_PATH = "kanji.csv"; // 同じフォルダにあるファイル名
+  const SAMPLE = [
+    { kanji: "羊毛", yomi: "ようもう" },
+    { kanji: "太陽", yomi: "たいよう" },
+    { kanji: "勉強", yomi: "べんきょう" },
+    { kanji: "準備", yomi: "じゅんび" },
+    { kanji: "希望", yomi: "きぼう" }
+  ];
+  const SPEECH_RATE = 0.8;       
+  const SPEECH_TIMEOUT_MS = 6000; 
+
+  // ===== 状態 =====
+  let items = [...SAMPLE];
+  let idx = 0;
+  let showYomi = false;
+  let auto = false;
+  let runId = 0;       
+  let timer = null;
+  let speakToken = 0;
+
+  const $ = id => document.getElementById(id);
+  const el = {
+    kanji: $('kanji'), yomi: $('yomi'), count: $('count'), bar: $('bar'), note: $('note'),
+    voice: $('btn-voice'), yomiBtn: $('btn-yomi'), prev: $('btn-prev'), next: $('btn-next'),
+    auto: $('btn-auto'), stop: $('btn-stop'), interval: $('interval'), out: $('interval-out'),
+    loadBtn: $('btn-load-csv'), statusText: $('status-text')
+  };
+
+  // ===== CSV解析（1列目:漢字、2列目:読み） =====
+  function parseCSV(text) {
+    const rows = [];
+    let row = [], cell = '', q = false;
+    text = text.replace(/^\uFEFF/, '');
+    for (let i = 0; i < text.length; i++) {
+      const c = text[i];
+      if (q) {
+        if (c === '"' && text[i + 1] === '"') { cell += '"'; i++; }
+        else if (c === '"') q = false;
+        else cell += c;
+      } else if (c === '"') q = true;
+      else if (c === ',') { row.push(cell); cell = ''; }
+      else if (c === '\n' || c === '\r') {
+        if (c === '\r' && text[i + 1] === '\n') i++;
+        row.push(cell); rows.push(row); row = []; cell = '';
+      } else cell += c;
+    }
+    row.push(cell); rows.push(row);
+
+    if (!rows.length) return [];
+    
+    const out = [];
+    for (let r = 0; r < rows.length; r++) {
+      const cols = rows[r];
+      if (cols.length >= 2) {
+        const k = (cols[0] || '').trim();
+        const y = (cols[1] || '').trim();
+        if (r === 0 && (k === 'kanji' || k === '漢字' || y === 'yomi' || y === '読み')) {
+          continue;
+        }
+        if (k && y) {
+          out.push({ kanji: k, yomi: y });
+        }
+      }
+    }
+    return out;
+  }
+
+  // ===== 「kanji.csvをよみこむ」ボタンを押したときの処理 =====
+  el.loadBtn.addEventListener('click', async () => {
+    try {
+      el.statusText.textContent = "よみこみ中...";
+      const res = await fetch(CSV_FILE_PATH);
+      if (!res.ok) throw new Error('HTTP ' + res.status);
+      const text = await res.text();
+      const data = parseCSV(text);
+      
+      if (data.length > 0) {
+        items = data;
+        idx = 0;
+        showYomi = false;
+        stopAuto();
+        el.statusText.textContent = "kanji.csv 読み込み成功！";
+        el.note.textContent = `${data.length}問をよみこみました！`;
+        render();
+      } else {
+        throw new Error('データが見つかりません');
+      }
+    } catch (e) {
+      console.error(e);
+      el.statusText.textContent = "よみこみ失敗";
+      alert('「kanji.csv」が同じフォルダに見つからないか、中身の形式がちがいます。');
+    }
+  });
+
+  // ===== 表示 =====
+  function render() {
+    const it = items[idx];
+    if (!it) return;
+    el.kanji.textContent = it.kanji;
+    el.kanji.style.setProperty('--n', [...it.kanji].length);
+    el.yomi.textContent = it.yomi;
+    el.yomi.style.setProperty('--m', [...it.yomi].length);
+    el.yomi.classList.toggle('on', showYomi);
+    el.count.textContent = `${idx + 1} / ${items.length}`;
+    el.bar.style.width = ((idx + 1) / items.length * 100) + '%';
+    updateButtons();
+  }
+
+  function updateButtons() {
+    const has = items.length > 0;
+    el.prev.disabled = !has || idx === 0;
+    el.next.disabled = !has || idx >= items.length - 1;
+    el.yomiBtn.disabled = !has;
+    el.voice.disabled = !has || auto;   
+    el.auto.disabled = !has || auto;
+    el.stop.disabled = !auto;
+  }
+
+  // ===== 音声 =====
+  function speak(text, done) {
+    const token = ++speakToken;
+    let finished = false;
+    const finish = () => {
+      if (finished) return;
+      finished = true;
+      if (token === speakToken && done) done();
+    };
+    if (!('speechSynthesis' in window)) { setTimeout(finish, 1500); return; }
+    window.speechSynthesis.cancel();
+    const u = new SpeechSynthesisUtterance(text);
+    u.lang = 'ja-JP';
+    u.rate = SPEECH_RATE;
+    const jp = window.speechSynthesis.getVoices().find(v => v.lang && v.lang.toLowerCase().startsWith('ja'));
+    if (jp) u.voice = jp;
+    u.onend = finish;
+    u.onerror = finish;
+    window.speechSynthesis.speak(u);
+    setTimeout(finish, SPEECH_TIMEOUT_MS);
+  }
+
+  function cancelSpeech() {
+    speakToken++;
+    if ('speechSynthesis' in window) window.speechSynthesis.cancel();
+  }
+
+  function unlockSpeech() {
+    if (!('speechSynthesis' in window)) return;
+    const u = new SpeechSynthesisUtterance(' ');
+    u.volume = 0;
+    window.speechSynthesis.speak(u);
+  }
+
+  // ===== 操作 =====
+  function onVoice() {
+    if (auto || !items[idx]) return;
+    speak(items[idx].yomi);
+  }
+
+  function onYomi() {
+    showYomi = !showYomi;
+    render();
+  }
+
+  function go(delta) {
+    const n = idx + delta;
+    if (n < 0 || n >= items.length) return;
+    idx = n;
+    showYomi = false;          
+    render();
+    if (auto) restartAuto();   
+    else cancelSpeech();
+  }
+
+  // ===== 自動 =====
+  function intervalMs() { return Number(el.interval.value) * 1000; }
+
+  function wait(id, fn) {
+    clearTimeout(timer);
+    timer = setTimeout(() => { if (id === runId) fn(); }, intervalMs());
+  }
+
+  function stepShow(id) {
+    wait(id, () => stepRead(id));
+  }
+
+  function stepRead(id) {
+    showYomi = true;
+    render();
+    speak(items[idx].yomi, () => {
+      if (id !== runId) return;
+      wait(id, () => {
+        if (idx >= items.length - 1) { finishAuto(); return; }
+        idx++;
+        showYomi = false;
+        render();
+        stepShow(id);
+      });
+    });
+  }
+
+  function startAuto() {
+    if (auto || !items.length) return;
+    unlockSpeech();
+    auto = true;
+    showYomi = false;
+    render();
+    restartAuto();
+  }
+
+  function restartAuto() {
+    runId++;
+    clearTimeout(timer);
+    cancelSpeech();
+    updateButtons();
+    stepShow(runId);
+  }
+
+  function stopAuto() {
+    auto = false;
+    runId++;
+    clearTimeout(timer);
+    cancelSpeech();
+    updateButtons();
+  }
+
+  function finishAuto() {   
+    stopAuto();
+    el.note.textContent = 'おしまい！';
+  }
+
+  // ===== イベント =====
+  el.voice.addEventListener('click', onVoice);
+  el.yomiBtn.addEventListener('click', onYomi);
+  el.prev.addEventListener('click', () => go(-1));
+  el.next.addEventListener('click', () => go(1));
+  el.auto.addEventListener('click', startAuto);
+  el.stop.addEventListener('click', stopAuto);
+  el.interval.addEventListener('input', () => { el.out.textContent = el.interval.value + 'びょう'; });
+  if ('speechSynthesis' in window) window.speechSynthesis.getVoices();
+
+  render();
+</script>
+</body>
+</html>

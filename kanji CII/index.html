@@ -18,6 +18,7 @@
     --teal: #2a9d8f;
     --green: #3c9d5d;
     --red: #d1495b;
+    --purple: #6a4c93;
     --muted: #6b7a90;
     --disabled: #c9d3de;
   }
@@ -95,32 +96,40 @@
   }
   .note { font-size: .8rem; color: var(--muted); text-align: center; min-height: 1.1em; margin: -4px 0 0; }
 
-  /* CSV読込ボタンのバー */
+  /* CSV読込＆シャッフルのバー */
   .load-bar {
     display: flex;
     align-items: center;
     justify-content: space-between;
+    gap: 6px;
     background: #fff;
     border: 2px solid var(--navy);
     border-radius: 16px;
-    padding: 6px 12px;
+    padding: 6px 10px;
     font-size: 0.95rem;
   }
-  .b-load {
-    background: var(--teal);
+  .load-bar-btns {
+    display: flex;
+    gap: 6px;
+    flex-shrink: 0;
+  }
+  .b-mini {
     color: #fff;
-    padding: 6px 14px;
+    padding: 6px 10px;
     border-radius: 12px;
     cursor: pointer;
-    font-size: 0.9rem;
+    font-size: 0.85rem;
     border: none;
     box-shadow: 0 2px 0 rgba(0,0,0,0.15);
     min-height: auto;
+    white-space: nowrap;
   }
-  .b-load:active {
+  .b-mini:active {
     transform: translateY(2px);
     box-shadow: none;
   }
+  .b-load { background: var(--teal); }
+  .b-shuffle { background: var(--purple); }
 
   /* ボタン */
   .pad { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
@@ -179,10 +188,13 @@
   </div>
   <p class="note" id="note"></p>
 
-  <!-- 同じフォルダのkanji.csvを読み込むボタン -->
+  <!-- 同じフォルダのkanji.csvを読み込む＆シャッフルボタン -->
   <div class="load-bar">
-    <span id="status-text" style="color: var(--muted); font-size: 0.85rem;">サンプルデータ表示中</span>
-    <button class="b-load" id="btn-load-csv">📂 kanji.csvをよみこむ</button>
+    <span id="status-text" style="color: var(--muted); font-size: 0.8rem; overflow: hidden; text-overflow: ellipsis; white-space: nowrap;">サンプル表示中</span>
+    <div class="load-bar-btns">
+      <button class="b-mini b-shuffle" id="btn-shuffle">🔀 シャッフル</button>
+      <button class="b-mini b-load" id="btn-load-csv">📂 CSVよみこむ</button>
+    </div>
   </div>
 
   <div class="pad">
@@ -228,7 +240,7 @@
     kanji: $('kanji'), yomi: $('yomi'), count: $('count'), bar: $('bar'), note: $('note'),
     voice: $('btn-voice'), yomiBtn: $('btn-yomi'), prev: $('btn-prev'), next: $('btn-next'),
     auto: $('btn-auto'), stop: $('btn-stop'), interval: $('interval'), out: $('interval-out'),
-    loadBtn: $('btn-load-csv'), statusText: $('status-text')
+    loadBtn: $('btn-load-csv'), shuffleBtn: $('btn-shuffle'), statusText: $('status-text')
   };
 
   // ===== CSV解析（1列目:漢字、2列目:読み） =====
@@ -270,7 +282,24 @@
     return out;
   }
 
-  // ===== 「kanji.csvをよみこむ」ボタンを押したときの処理 =====
+  // ===== シャッフル処理 =====
+  function shuffleItems() {
+    if (items.length <= 1) return;
+    stopAuto();
+    cancelSpeech();
+    for (let i = items.length - 1; i > 0; i--) {
+      const j = Math.floor(Math.random() * (i + 1));
+      [items[i], items[j]] = [items[j], items[i]];
+    }
+    idx = 0;
+    showYomi = false;
+    el.note.textContent = 'じゅんばんをシャッフルしました！';
+    render();
+  }
+
+  el.shuffleBtn.addEventListener('click', shuffleItems);
+
+  // ===== 「CSVよみこむ」ボタンを押したときの処理 =====
   el.loadBtn.addEventListener('click', async () => {
     try {
       el.statusText.textContent = "よみこみ中...";

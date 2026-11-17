@@ -1,0 +1,748 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>九九のれんしゅう</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Klee+One:wght@400;600&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --bg: #e9f1f7;
+    --card: #ffffff;
+    --ink: #1b2a41;
+    --navy: #23395b;
+    --yomi: #d1495b;
+    --amber: #f2b134;
+    --teal: #2a9d8f;
+    --green: #3c9d5d;
+    --red: #d1495b;
+    --purple: #6a4c93;
+    --muted: #6b7a90;
+    --disabled: #c9d3de;
+  }
+  * { box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
+  [hidden] { display: none !important; }
+  html, body { height: 100%; margin: 0; }
+  body {
+    background: var(--bg);
+    color: var(--ink);
+    font-family: "Klee One", "UD デジタル 教科書体 N-R", "UD Digi Kyokasho N-R", "Yu Kyokasho", "Hiragino Maru Gothic ProN", "Noto Sans JP", sans-serif;
+    font-weight: 600;
+    user-select: none;
+    -webkit-user-select: none;
+  }
+  #app {
+    height: 100dvh;
+    max-width: 640px;
+    margin: 0 auto;
+    padding: calc(10px + env(safe-area-inset-top, 0px)) 14px calc(12px + env(safe-area-inset-bottom, 0px));
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+  }
+
+  /* ===== タブ ===== */
+  .tabs { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; }
+  .tab {
+    min-height: 46px; font-size: 1.15rem; border-radius: 14px;
+    background: #fff; color: var(--navy); border: 3px solid var(--navy); box-shadow: none;
+  }
+  .tab[aria-pressed="true"] { background: var(--navy); color: #fff; }
+
+  /* ===== 進みぐあい ===== */
+  .top { display: flex; align-items: center; gap: 12px; }
+  .bar { flex: 1; height: 12px; background: #fff; border-radius: 6px; overflow: hidden; border: 2px solid var(--navy); }
+  .bar > i { display: block; height: 100%; width: 0; background: var(--amber); transition: width .25s; }
+  .count { font-size: 1.05rem; min-width: 5.5em; text-align: right; font-variant-numeric: tabular-nums; }
+
+  /* ===== カード ===== */
+  .card {
+    flex: 1;
+    min-height: 0;
+    container-type: size;
+    background: var(--card);
+    border: 4px solid var(--navy);
+    border-radius: 24px;
+    overflow: hidden;
+  }
+  .view { display: none; width: 100%; height: 100%; flex-direction: column; align-items: center; }
+  .view.on { display: flex; }
+
+  /* れんしゅう */
+  .eq { font-size: min(12cqh, 13cqw); line-height: 1.1; padding-top: 2.5cqh; white-space: nowrap; }
+  .eq b { color: var(--navy); font-weight: 600; }
+  .yomi {
+    color: var(--yomi);
+    font-size: min(calc(88cqw / var(--m, 1)), 8.5cqh);
+    line-height: 1.15; white-space: nowrap; margin-top: 1cqh;
+  }
+  .dots { flex: 1; min-height: 0; width: 100%; padding: 1cqh 4cqw 0; }
+  .dots svg { width: 100%; height: 100%; display: block; overflow: visible; }
+  .dot { transform-box: fill-box; transform-origin: center; animation: drop .32s ease-out both; }
+  .dot.still { animation: none; }
+  .dot.g0 { fill: var(--teal); }
+  .dot.g1 { fill: var(--amber); }
+  @keyframes drop { from { transform: translateY(-1.4px) scale(.5); opacity: 0; } to { transform: none; opacity: 1; } }
+  .cap { font-size: 5cqh; color: var(--muted); padding: 1cqh 0 2cqh; min-height: 1.2em; }
+
+.cap {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 5px;
+  font-size: 1.2rem;
+  color: var(--muted);
+}
+
+.cap strong {
+  font-size: 1.7rem;
+  color: var(--navy);
+}
+
+  /* テスト設定 */
+  #v-setup, #v-result { overflow-y: auto; padding: 14px 14px 12px; justify-content: flex-start; gap: 6px; }
+  #v-setup h2 { margin: 2px 0 4px; font-size: 1.4rem; }
+  .lab { margin: 8px 0 0; font-size: 1rem; color: var(--muted); align-self: flex-start; }
+  .hint { margin: 8px 0 0; font-size: 1rem; color: var(--navy); }
+
+  /* テスト出題 */
+  #v-quiz { justify-content: flex-start; }
+  .q-eq { font-size: min(15cqh, 13cqw); line-height: 1.2; padding-top: 4cqh; white-space: nowrap; }
+  .ans { display: inline-block; min-width: 1.5em; text-align: center; border-bottom: .06em solid var(--navy); color: var(--navy); }
+  .ans.empty { color: var(--disabled); }
+  .ans.ok { color: var(--green); border-color: var(--green); }
+  .ans.ng { color: var(--red); border-color: var(--red); }
+  .fb { visibility: hidden; display: flex; flex-direction: column; align-items: center; margin-top: 2cqh; }
+  .fb.on { visibility: visible; }
+  .mark { font-size: 15cqh; line-height: 1; }
+  .mark.ok { color: var(--green); }
+  .mark.ng { color: var(--red); }
+  .fb-text { font-size: 7cqh; margin-top: 1cqh; }
+  .fb-eq { font-size: 8cqh; margin-top: 2cqh; color: var(--navy); }
+  .fb-yomi { color: var(--yomi); font-size: min(calc(88cqw / var(--m, 1)), 7.5cqh); margin-top: 1cqh; white-space: nowrap; }
+
+  /* けっか */
+  .score { font-size: 4rem; line-height: 1.1; margin-top: 6px; }
+  .score small { font-size: 1.6rem; color: var(--muted); }
+  .msg { font-size: 1.3rem; color: var(--navy); }
+  .wl-title { font-size: 1rem; color: var(--muted); margin-top: 8px; align-self: flex-start; }
+  .wl { display: flex; flex-wrap: wrap; gap: 6px; align-self: flex-start; }
+  .wl span { background: #fdecef; color: var(--red); border-radius: 10px; padding: 4px 10px; font-size: 1.05rem; }
+
+  .note { margin: 0; font-size: 1.1rem; color: var(--navy); text-align: center; }
+  .note:empty { display: none; }
+
+  /* ===== 操作パネル ===== */
+  .panel { display: none; flex-direction: column; gap: 8px; }
+  .panel.on { display: flex; }
+  .row3 { display: grid; gap: 8px; }
+  .row3.a { grid-template-columns: 1fr 1.3fr 1fr; }
+  .row3.b { grid-template-columns: 1.2fr 1.2fr .9fr; }
+
+  button {
+    font: inherit;
+    font-size: 1.2rem;
+    border: 0;
+    border-radius: 18px;
+    min-height: 54px;
+    padding: 4px 6px;
+    color: #fff;
+    cursor: pointer;
+    box-shadow: 0 4px 0 rgba(0,0,0,.22);
+    transition: transform .06s, box-shadow .06s;
+  }
+  button:active:not(:disabled) { transform: translateY(3px); box-shadow: 0 1px 0 rgba(0,0,0,.22); }
+  button:focus-visible { outline: 4px solid var(--amber); outline-offset: 2px; }
+  button:disabled { background: var(--disabled) !important; color: #fff; box-shadow: none; cursor: default; }
+  .row3.b button { font-size: 1.05rem; }
+  .big { font-size: 1.5rem; min-height: 62px; }
+  .b-voice { background: var(--teal); }
+  .b-prev  { background: #fff; color: var(--navy); border: 3px solid var(--navy); }
+  .b-prev:disabled { border-color: var(--disabled); color: var(--disabled); background: #fff !important; }
+  .b-next  { background: var(--navy); }
+  .b-auto  { background: var(--green); }
+  .b-all   { background: var(--purple); }
+  .b-stop  { background: var(--red); }
+  .b-retry { background: var(--amber); color: var(--ink); }
+  .b-plain { background: #fff; color: var(--navy); border: 3px solid var(--navy); }
+
+  /* だんボタン */
+  .chips { display: grid; grid-template-columns: repeat(8, 1fr); gap: 5px; width: 100%; }
+  .chips.multi { grid-template-columns: repeat(4, 1fr); gap: 8px; }
+  .chip {
+    min-height: 48px; padding: 0; font-size: 1.35rem; border-radius: 12px;
+    background: #fff; color: var(--navy); border: 2px solid var(--navy); box-shadow: none;
+  }
+  .chips.multi .chip { min-height: 52px; }
+  .chip[aria-pressed="true"] { background: var(--navy); color: #fff; }
+
+  /* はやさ・もんだいすう */
+  .seg {
+    display: flex; align-items: center; gap: 8px;
+    background: #fff; border: 2px solid var(--navy); border-radius: 18px; padding: 5px 10px;
+    font-size: 1.05rem;
+  }
+  .pills { display: flex; gap: 8px; width: 100%; }
+  .seg .pills { width: auto; flex: 1; }
+  .pill {
+    flex: 1; min-height: 40px; font-size: 1rem; border-radius: 12px; padding: 0 4px;
+    background: #fff; color: var(--navy); border: 2px solid var(--navy); box-shadow: none;
+  }
+  .pills.lg .pill { min-height: 50px; font-size: 1.15rem; }
+  .pill[aria-pressed="true"] { background: var(--navy); color: #fff; }
+
+  /* 数字ボタン */
+  .padnum { display: grid; grid-template-columns: repeat(3, 1fr); gap: 8px; }
+  .num {
+    min-height: 52px; font-size: 1.7rem; background: #fff; color: var(--navy); border: 3px solid var(--navy);
+  }
+  .num.del { background: var(--amber); color: var(--ink); border-color: var(--amber); font-size: 1.15rem; }
+  .num.go  { background: var(--green); color: #fff; border-color: var(--green); font-size: 1.15rem; }
+  .num:disabled { border-color: var(--disabled); }
+
+  @media (max-height: 600px) {
+    #app { gap: 5px; }
+    button { min-height: 44px; font-size: 1.05rem; }
+    .tab { min-height: 38px; }
+    .chip { min-height: 40px; }
+    .num { min-height: 42px; font-size: 1.4rem; }
+    .pill { min-height: 34px; }
+    .big { min-height: 50px; }
+  }
+  @media (prefers-reduced-motion: reduce) {
+    * { transition: none !important; }
+    .dot { animation: none !important; }
+  }
+</style>
+</head>
+<body>
+<div id="app">
+  <nav class="tabs">
+    <button class="tab" id="tab-practice" aria-pressed="true">れんしゅう</button>
+    <button class="tab" id="tab-test" aria-pressed="false">テスト</button>
+  </nav>
+
+  <div class="top" id="top">
+    <div class="bar"><i id="bar"></i></div>
+    <div class="count" id="count"></div>
+  </div>
+
+  <main class="card">
+    <!-- れんしゅう -->
+    <section class="view on" id="v-practice">
+      <div class="eq" id="pr-eq"></div>
+      <div class="yomi" id="pr-yomi"></div>
+      <div class="dots" id="pr-dots"></div>
+      <div class="cap" id="pr-cap"></div>
+    </section>
+
+    <!-- テスト設定 -->
+    <section class="view" id="v-setup">
+      <h2>ランダムテスト</h2>
+      <p class="lab">どの だん？（えらんだ だんから でるよ）</p>
+      <div class="chips multi" id="chips-setup"></div>
+      <p class="lab">なんもん？</p>
+      <div class="pills lg" id="count-pills">
+        <button class="pill" data-count="10" aria-pressed="true">10もん</button>
+        <button class="pill" data-count="20" aria-pressed="false">20もん</button>
+        <button class="pill" data-count="0" aria-pressed="false">ぜんぶ</button>
+      </div>
+      <p class="hint" id="setup-hint"></p>
+    </section>
+
+    <!-- テスト出題 -->
+    <section class="view" id="v-quiz">
+      <div class="q-eq" id="q-eq"></div>
+      <div class="fb" id="fb">
+        <div class="mark" id="fb-mark"></div>
+        <div class="fb-text" id="fb-text"></div>
+        <div class="fb-eq" id="fb-eq"></div>
+        <div class="fb-yomi" id="fb-yomi"></div>
+      </div>
+    </section>
+
+    <!-- けっか -->
+    <section class="view" id="v-result">
+      <div class="score"><span id="rs-n"></span><small id="rs-t"></small></div>
+      <div class="msg" id="rs-msg"></div>
+      <div class="wl-title" id="rs-wl-title"></div>
+      <div class="wl" id="rs-wl"></div>
+    </section>
+  </main>
+  <p class="note" id="note"></p>
+
+  <!-- 操作：れんしゅう -->
+  <div class="panel on" id="p-practice">
+    <div class="chips" id="chips-practice"></div>
+    <div class="row3 a">
+      <button class="b-prev" id="btn-prev" aria-label="まえへ">◀ まえ</button>
+      <button class="b-voice" id="btn-voice">🔊 おと</button>
+      <button class="b-next" id="btn-next" aria-label="つぎへ">つぎ ▶</button>
+    </div>
+    <div class="row3 b">
+      <button class="b-auto" id="btn-play-dan">▶ このだん</button>
+      <button class="b-all" id="btn-play-all">▶▶ ぜんぶ</button>
+      <button class="b-stop" id="btn-stop">■ とめる</button>
+    </div>
+    <div class="seg">
+      <span>はやさ</span>
+      <div class="pills" id="speed-pills">
+        <button class="pill" data-speed="1.5" aria-pressed="true">1.5ばい</button>
+        <button class="pill" data-speed="2.5" aria-pressed="false">2.5ばい</button>
+        <button class="pill" data-speed="3.0" aria-pressed="false">3.0ばい</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- 操作：テスト設定 -->
+  <div class="panel" id="p-setup">
+    <button class="b-auto big" id="btn-start">▶ スタート</button>
+  </div>
+
+  <!-- 操作：出題 -->
+  <div class="panel" id="p-quiz">
+    <div class="padnum" id="padnum"></div>
+    <button class="b-next big" id="btn-qnext" hidden>つぎへ ▶</button>
+  </div>
+
+  <!-- 操作：けっか -->
+  <div class="panel" id="p-result">
+    <button class="b-retry big" id="btn-retry-wrong">まちがいを もういちど</button>
+    <button class="b-next big" id="btn-again">もういちど テスト</button>
+    <button class="b-plain big" id="btn-to-practice">れんしゅうへ</button>
+  </div>
+</div>
+
+<script>
+  // ===== データ：2〜9の段（72問） =====
+  const YOMI = {
+    2: ["にいちがに","ににんがし","にさんがろく","にしがはち","にごじゅう","にろくじゅうに","にしちじゅうし","にはちじゅうろく","にくじゅうはち"],
+    3: ["さんいちがさん","さにがろく","さざんがく","さんしじゅうに","さんごじゅうご","さぶろくじゅうはち","さんしちにじゅういち","さんぱにじゅうし","さんくにじゅうしち"],
+    4: ["しいちがし","しにがはち","しさんじゅうに","ししじゅうろく","しごにじゅう","しろくにじゅうし","しひちにじゅうはち","しはさんじゅうに","しくさんじゅうろく"],
+    5: ["ごいちがご","ごにじゅう","ごさんじゅうご","ごしにじゅう","ごごにじゅうご","ごろくさんじゅう","ごしちさんじゅうご","ごはしじゅう","ごっくしじゅうご"],
+    6: ["ろくいちがろく","ろくにじゅうに","ろくさんじゅうはち","ろくしにじゅうし","ろくごさんじゅう","ろくろくさんじゅうろく","ろくしちしじゅうに","ろくはしじゅうはち","ろっくごじゅうし"],
+    7: ["しちいちがしち","しちにじゅうし","しちさんにじゅういち","しちしにじゅうはち","しちごさんじゅうご","しちろくしじゅうに","しちしちしじゅうく","しちはごじゅうろく","しちくろくじゅうさん"],
+    8: ["はちいちがはち","はちにじゅうろく","はっさんにじゅうし","はっしさんじゅうに","はちごしじゅう","はちろくしじゅうはち","はちしちごじゅうろく","はっぱろくじゅうし","はっくしちじゅうに"],
+    9: ["くいちがく","くにじゅうはち","くさんにじゅうしち","くしさんじゅうろく","くごしじゅうご","くろくごじゅうし","くしちろくじゅうさん","くはしちじゅうに","くくはちじゅういち"]
+  };
+  // 音声が読み間違える問題だけ、ここで読み上げ用の文字を差し替えられる（例: "ごはしじゅう": "ごーはしじゅう"）
+  const SPEAK_FIX = {"はっくしちじゅうに":"はっくくしちじゅうに","くはしちじゅうに":"くははしちじゅうに"};
+
+  const DANS = [2, 3, 4, 5, 6, 7, 8, 9];
+  const LAST = 71; // 0〜71 が 2×1〜9×9
+
+  // ===== 状態 =====
+  let speed = 1;
+  let view = 'practice';
+  let idx = 0;
+  let playing = false, playMode = null, runId = 0, timer = null, speakToken = 0;
+  const selDans = new Set(DANS);
+  let qCount = 10;
+  let queue = [], qi = 0, correct = 0, wrongs = [], answer = '', judged = false;
+
+  const $ = id => document.getElementById(id);
+  const fromIdx = n => ({ a: 2 + Math.floor(n / 9), b: (n % 9) + 1 });
+  const yomiOf = (a, b) => YOMI[a][b - 1];
+  const len = s => [...s].length;
+
+  // ===== 音声 =====
+  function speak(text, done) {
+    const token = ++speakToken;
+    let finished = false;
+    const finish = () => {
+      if (finished) return;
+      finished = true;
+      if (token === speakToken && done) done();
+    };
+    if (!('speechSynthesis' in window)) { setTimeout(finish, 1500 / speed); return; }
+    window.speechSynthesis.cancel();
+    const u = new SpeechSynthesisUtterance(SPEAK_FIX[text] || text);
+    u.lang = 'ja-JP';
+    u.rate = speed;
+    const jp = window.speechSynthesis.getVoices().find(v => v.lang && v.lang.toLowerCase().startsWith('ja'));
+    if (jp) u.voice = jp;
+    u.onend = finish;
+    u.onerror = finish;
+    window.speechSynthesis.speak(u);
+    setTimeout(finish, 6000);
+  }
+  function cancelSpeech() {
+    speakToken++;
+    if ('speechSynthesis' in window) window.speechSynthesis.cancel();
+  }
+  function unlockSpeech() { // iPhone/iPad：ボタンを押した瞬間に一度しゃべらせておく
+    if (!('speechSynthesis' in window)) return;
+    const u = new SpeechSynthesisUtterance(' ');
+    u.volume = 0;
+    window.speechSynthesis.speak(u);
+  }
+
+  // ===== 画面切り替え =====
+  function show(v) {
+    view = v;
+    ['practice', 'setup', 'quiz', 'result'].forEach(n => {
+      $('v-' + n).classList.toggle('on', n === v);
+      $('p-' + n).classList.toggle('on', n === v);
+    });
+    $('top').hidden = !(v === 'practice' || v === 'quiz');
+    $('tab-practice').setAttribute('aria-pressed', v === 'practice');
+    $('tab-test').setAttribute('aria-pressed', v !== 'practice');
+    $('note').textContent = '';
+  }
+
+  // ===== ■の図（a個のかたまりが b こ。下から積み上がる） =====
+  // 大きさと位置は「9段ぶん」で固定。すでにある■は動かず、新しい1段だけが上から入る。
+  
+function buildDots(a, b, animate) {
+  const GY = 0.25;
+  const S = 0.86;
+  const off = (1 - S) / 2;
+
+  const LEFT = 1.2;
+  const RIGHT = 1.5;
+  const h = 9 + 8 * GY;
+  const w = LEFT + a + RIGHT;
+
+  let svg = `<svg viewBox="0 0 ${w} ${h}"
+    preserveAspectRatio="xMidYMid meet"
+    role="img"
+    aria-label="${a}が${b}つぶん">`;
+
+  for (let g = 0; g < b; g++) {
+    const y = (8 - g) * (1 + GY) + off;
+    const isNew = animate && g === b - 1;
+    const total = a * (g + 1);
+
+    // 段数
+    svg += `<text
+      x="${LEFT - 0.2}"
+      y="${y + S * 0.78}"
+      text-anchor="end"
+      font-size="0.65"
+      fill="#6b7a90">${g + 1}</text>`;
+
+    // ブロック
+    for (let k = 0; k < a; k++) {
+      const style = isNew
+        ? ` style="animation-delay:${Math.round(k * 30 / speed)}ms"`
+        : '';
+
+      svg += `<rect
+        class="dot g${g % 2}${isNew ? '' : ' still'}"
+        x="${LEFT + k + off}"
+        y="${y}"
+        width="${S}"
+        height="${S}"
+        rx="0.1"${style}/>`;
+    }
+
+  
+  }
+
+  return svg + '</svg>';
+}
+
+
+  // ===== れんしゅう =====
+  function renderPractice(animate = true) {
+    const { a, b } = fromIdx(idx);
+    const y = yomiOf(a, b);
+    $('note').textContent = '';
+    $('pr-eq').innerHTML = `${a} × ${b} = <b>${a * b}</b>`;
+    $('pr-yomi').textContent = y;
+    $('pr-yomi').style.setProperty('--m', len(y));
+    $('pr-dots').innerHTML = buildDots(a, b, animate);
+$('pr-cap').innerHTML =
+  `<strong>${a}</strong> <span>が</span>
+   <strong>${b}</strong>
+   <span>こで</span>
+   <strong>${a * b}</strong>`;
+    $('count').textContent = `${a}のだん ${b}/9`;
+    $('bar').style.width = (b / 9 * 100) + '%';
+    updatePracticeButtons();
+  }
+
+  function updatePracticeButtons() {
+    const { a } = fromIdx(idx);
+    document.querySelectorAll('#chips-practice .chip').forEach(c =>
+      c.setAttribute('aria-pressed', Number(c.dataset.d) === a));
+    $('btn-prev').disabled = idx === 0;
+    $('btn-next').disabled = idx === LAST;
+    $('btn-voice').disabled = playing;
+    $('btn-play-dan').disabled = playing;
+    $('btn-play-all').disabled = playing;
+    $('btn-stop').disabled = !playing;
+  }
+
+  function wait(ms, id, fn) {
+    clearTimeout(timer);
+    timer = setTimeout(() => { if (id === runId) fn(); }, ms);
+  }
+
+  function startPlay(mode) {
+    if (playing) return;
+    unlockSpeech();
+    playing = true;
+    playMode = mode;
+    idx = mode === 'all' ? 0 : Math.floor(idx / 9) * 9; // ぜんぶ=2×1から／このだん=その段の×1から
+    runPlay();
+  }
+
+  function runPlay() {
+    runId++;
+    clearTimeout(timer);
+    cancelSpeech();
+    renderPractice();
+    playStep(runId);
+  }
+
+  function playStep(id) {
+    const { a, b } = fromIdx(idx);
+    speak(yomiOf(a, b), () => {
+      if (id !== runId) return;
+      const endOfDan = b === 9;
+      wait((endOfDan ? 1400 : 650) / speed, id, () => {
+        if ((endOfDan && playMode === 'dan') || idx >= LAST) { finishPlay(); return; }
+        idx++;
+        renderPractice();
+        playStep(id);
+      });
+    });
+  }
+
+  function stopPlay() {
+    playing = false;
+    runId++;
+    clearTimeout(timer);
+    cancelSpeech();
+    updatePracticeButtons();
+  }
+
+  function finishPlay() {
+    stopPlay();
+    $('note').textContent = 'おしまい！';
+  }
+
+  function go(d) {
+    const n = idx + d;
+    if (n < 0 || n > LAST) return;
+    idx = n;
+    if (playing) runPlay();                 // 自動中は、その問題から数えなおす
+    else { cancelSpeech(); renderPractice(d > 0); } // 戻るときは動かさず、1段へらすだけ
+  }
+
+  function pickDan(d) {
+    stopPlay();
+    idx = (d - 2) * 9;
+    renderPractice();
+  }
+
+  // ===== テスト =====
+  function shuffle(arr) {
+    for (let i = arr.length - 1; i > 0; i--) {
+      const j = Math.floor(Math.random() * (i + 1));
+      [arr[i], arr[j]] = [arr[j], arr[i]];
+    }
+    return arr;
+  }
+
+  function buildPool() {
+    const pool = [];
+    DANS.filter(d => selDans.has(d)).forEach(d => { for (let b = 1; b <= 9; b++) pool.push({ a: d, b }); });
+    return pool;
+  }
+
+  function buildList() {
+    const pool = shuffle(buildPool());
+    return qCount ? pool.slice(0, qCount) : pool;
+  }
+
+  function updateSetupHint() {
+    const n = qCount ? Math.min(qCount, buildPool().length) : buildPool().length;
+    $('setup-hint').textContent = `${n}もん でるよ`;
+  }
+
+  function startQuiz(list) {
+    cancelSpeech();
+    queue = list; qi = 0; correct = 0; wrongs = [];
+    show('quiz');
+    renderQuiz();
+  }
+
+  function renderQuiz() {
+    const q = queue[qi];
+    answer = ''; judged = false;
+    $('q-eq').innerHTML = `${q.a} × ${q.b} = <span class="ans empty" id="ans">?</span>`;
+    $('fb').classList.remove('on');
+    $('count').textContent = `${qi + 1} / ${queue.length}`;
+    $('bar').style.width = ((qi + 1) / queue.length * 100) + '%';
+    $('padnum').hidden = false;
+    $('btn-qnext').hidden = true;
+    updateAnswer();
+  }
+
+  function updateAnswer() {
+    const s = $('ans');
+    s.textContent = answer || '?';
+    s.classList.toggle('empty', !answer);
+    padGo.disabled = !answer || judged;
+  }
+
+  function pressDigit(d) {
+    if (judged || answer.length >= 2) return;
+    if (answer === '' && d === '0') return;
+    answer += d;
+    updateAnswer();
+  }
+  function pressDel() {
+    if (judged) return;
+    answer = answer.slice(0, -1);
+    updateAnswer();
+  }
+
+  function submit() {
+    if (judged || !answer) return;
+    const q = queue[qi];
+    const prod = q.a * q.b;
+    const ok = Number(answer) === prod;
+    judged = true;
+    if (ok) correct++; else wrongs.push(q);
+    $('ans').classList.add(ok ? 'ok' : 'ng');
+    $('fb-mark').textContent = ok ? '○' : '✕';
+    $('fb-mark').className = 'mark ' + (ok ? 'ok' : 'ng');
+    $('fb-text').textContent = ok ? 'せいかい！' : `こたえは ${prod}`;
+    $('fb-eq').textContent = `${q.a} × ${q.b} = ${prod}`;
+    const y = yomiOf(q.a, q.b);
+    $('fb-yomi').textContent = y;
+    $('fb-yomi').style.setProperty('--m', len(y));
+    $('fb').classList.add('on');
+    $('padnum').hidden = true;
+    $('btn-qnext').hidden = false;
+    $('btn-qnext').textContent = qi === queue.length - 1 ? 'けっかを みる' : 'つぎへ ▶';
+    speak(y);
+  }
+
+  function nextQuestion() {
+    cancelSpeech();
+    qi++;
+    if (qi >= queue.length) showResult();
+    else renderQuiz();
+  }
+
+  function showResult() {
+    show('result');
+    const total = queue.length;
+    const pct = correct / total;
+    $('rs-n').textContent = correct;
+    $('rs-t').textContent = ` / ${total}`;
+    $('rs-msg').textContent =
+      pct === 1 ? 'ぜんぶ せいかい！すごい！' :
+      pct >= 0.8 ? 'よくできました！' :
+      pct >= 0.5 ? 'あと すこし！がんばろう' : 'もういちど れんしゅうしよう';
+    $('rs-wl-title').textContent = wrongs.length ? 'まちがえた もんだい' : '';
+    $('rs-wl').innerHTML = wrongs.map(q => `<span>${q.a}×${q.b}</span>`).join('');
+    $('btn-retry-wrong').hidden = wrongs.length === 0;
+  }
+
+  // ===== 初期化・イベント =====
+  // だんボタン（れんしゅう：1つ選ぶ）
+  DANS.forEach(d => {
+    const c = document.createElement('button');
+    c.className = 'chip'; c.dataset.d = d; c.textContent = d;
+    c.setAttribute('aria-label', `${d}のだん`);
+    c.addEventListener('click', () => pickDan(d));
+    $('chips-practice').appendChild(c);
+  });
+
+  // だんボタン（テスト：いくつでも選べる。最後の1つは外せない）
+  DANS.forEach(d => {
+    const c = document.createElement('button');
+    c.className = 'chip'; c.dataset.d = d; c.textContent = `${d}のだん`;
+    c.style.fontSize = '1.1rem';
+    c.setAttribute('aria-pressed', 'true');
+    c.addEventListener('click', () => {
+      if (selDans.has(d)) { if (selDans.size === 1) return; selDans.delete(d); }
+      else selDans.add(d);
+      c.setAttribute('aria-pressed', selDans.has(d));
+      updateSetupHint();
+    });
+    $('chips-setup').appendChild(c);
+  });
+
+  // 数字ボタン
+  let padGo = null;
+  ['7','8','9','4','5','6','1','2','3','del','0','go'].forEach(k => {
+    const b = document.createElement('button');
+    b.className = 'num' + (k === 'del' ? ' del' : k === 'go' ? ' go' : '');
+    b.textContent = k === 'del' ? 'けす' : k === 'go' ? 'こたえる' : k;
+    if (k === 'del') b.addEventListener('click', pressDel);
+    else if (k === 'go') { b.addEventListener('click', submit); padGo = b; }
+    else b.addEventListener('click', () => pressDigit(k));
+    $('padnum').appendChild(b);
+  });
+
+  // タブ
+  $('tab-practice').addEventListener('click', () => {
+    cancelSpeech();
+    show('practice');
+    renderPractice();
+  });
+  $('tab-test').addEventListener('click', () => {
+    stopPlay();
+    cancelSpeech();
+    show('setup');
+    updateSetupHint();
+  });
+
+  // れんしゅう
+  $('btn-prev').addEventListener('click', () => go(-1));
+  $('btn-next').addEventListener('click', () => go(1));
+  $('btn-voice').addEventListener('click', () => {
+    if (playing) return;
+    renderPractice(); // ドットをもういちど動かす
+    const { a, b } = fromIdx(idx);
+    speak(yomiOf(a, b));
+  });
+  $('btn-play-dan').addEventListener('click', () => startPlay('dan'));
+  $('btn-play-all').addEventListener('click', () => startPlay('all'));
+  $('btn-stop').addEventListener('click', stopPlay);
+
+  // はやさ
+  $('speed-pills').addEventListener('click', e => {
+    const b = e.target.closest('.pill');
+    if (!b) return;
+    speed = Number(b.dataset.speed);
+    document.querySelectorAll('#speed-pills .pill').forEach(p => p.setAttribute('aria-pressed', p === b));
+  });
+
+  // テスト設定
+  $('count-pills').addEventListener('click', e => {
+    const b = e.target.closest('.pill');
+    if (!b) return;
+    qCount = Number(b.dataset.count);
+    document.querySelectorAll('#count-pills .pill').forEach(p => p.setAttribute('aria-pressed', p === b));
+    updateSetupHint();
+  });
+  $('btn-start').addEventListener('click', () => startQuiz(buildList()));
+
+  // テスト出題・けっか
+  $('btn-qnext').addEventListener('click', nextQuestion);
+  $('btn-retry-wrong').addEventListener('click', () => startQuiz(shuffle(wrongs.slice())));
+  $('btn-again').addEventListener('click', () => startQuiz(buildList()));
+  $('btn-to-practice').addEventListener('click', () => $('tab-practice').click());
+
+  // パソコンのキーボード（テスト中）
+  document.addEventListener('keydown', e => {
+    if (view !== 'quiz') return;
+    if (/^[0-9]$/.test(e.key)) pressDigit(e.key);
+    else if (e.key === 'Backspace') pressDel();
+    else if (e.key === 'Enter') { e.preventDefault(); judged ? nextQuestion() : submit(); }
+  });
+
+  if ('speechSynthesis' in window) window.speechSynthesis.getVoices();
+  renderPractice();
+</script>
+</body>
+</html>

@@ -75,18 +75,29 @@
 
   /* 名前（漢字とふりがな）：大きく */
   .head {
-    height: 40cqh; width: 100%;
+  height: 28cqh;
+  width: 100%;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  padding: 0 2cqw;
     display: flex; flex-direction: column; align-items: center; justify-content: center;
     padding: 0 2cqw;
   }
   .h-furi {
-    color: var(--yomi);
-    font-size: min(calc(90cqw / var(--m, 6)), 8.5cqh);
-    line-height: 1.2; min-height: 1.2em; white-space: nowrap;
+  color: var(--yomi);
+  font-size: min(calc(90cqw / var(--m, 6)), 7cqh);
+  line-height: 1.2;
+  min-height: 1.2em;
+  white-space: nowrap;
+margin-bottom: -8px;
   }
   .h-kanji {
-    font-size: min(calc(84cqw / var(--n, 3)), 20cqh);
-    line-height: 1.08; white-space: nowrap;
+margin-top: -8px;
+  font-size: min(calc(84cqw / var(--n, 3)), 17cqh);
+  line-height: 1.08;
+  white-space: nowrap;
   }
   .h-msg { font-size: min(5.5cqh, 6cqw); min-height: 1.3em; white-space: nowrap; }
   .h-msg.ok { color: var(--green); }
@@ -149,6 +160,15 @@
 
   .panel { display: none; height: var(--ph); flex-direction: column; gap: 8px; }
   .panel.on { display: flex; }
+  .speed-row { display: flex; align-items: center; gap: 6px; }
+  .speed-label { flex: 0 0 auto; font-size: .82rem; color: var(--muted); }
+  .speed-btn {
+    flex: 1; min-width: 0; min-height: 32px; padding: 2px 4px;
+    font-size: .9rem; border-radius: 12px;
+    background: #fff; color: var(--navy); border: 2px solid var(--navy);
+    box-shadow: none;
+  }
+  .speed-btn[aria-pressed="true"] { background: var(--navy); color: #fff; }
   .grid2 { flex: 1; min-height: 0; display: grid; grid-template: 1fr 1fr / 1fr 1fr; gap: 8px; }
   .grid1 { flex: 1; min-height: 0; display: grid; grid-template-rows: 1fr 1fr; gap: 8px; }
   .b-prev { background: #fff; color: var(--navy); border: 3px solid var(--navy); }
@@ -218,6 +238,7 @@
 
   <!-- ①おぼえる -->
   <div class="panel on" id="p-learn">
+   
     <div class="grid2">
       <button class="b-prev" id="btn-prev">◀ まえへ</button>
       <button class="b-next" id="btn-next">つぎへ ▶</button>
@@ -239,6 +260,12 @@
       <button class="b-next" id="btn-again">もういちど</button>
     </div>
   </div>
+ <div class="speed-row" aria-label="じどう再生の速さ">
+      <span class="speed-label">じどうの速さ</span>
+      <button class="speed-btn" data-speed="slow" aria-pressed="true">ゆっくり</button>
+      <button class="speed-btn" data-speed="normal" aria-pressed="false">ふつう</button>
+      <button class="speed-btn" data-speed="fast" aria-pressed="false">はやい</button>
+    </div>
   <div class="home-row"><a class="home-link" href="https://kato-yoshimi.github.io/kumon/">← もくじにもどる</a></div>
 </div>
 
@@ -306,7 +333,8 @@
   ];
   const COLOR = Object.fromEntries(REGIONS.map(r => [r.key, r.color]));
   const BADGE = ['#d1495b', '#2a9d8f', '#6a4c93', '#e07a1f'];   // ②の番号の色
-  const AUTO_WAIT_MS = 3000;   // 「じどう」で、読んだあとに待つ時間
+  const AUTO_WAIT_MS = { slow: 3000, normal: 1500, fast: 750 }; // 読み上げ後の待ち時間
+  let autoSpeed = 'slow';
   const QUIZ_N = 10;           // クイズ1回の問題数
   const SPEECH_RATE = 0.85;
   const ALL = P.map((_, i) => i);
@@ -469,6 +497,7 @@
     }
     document.querySelectorAll('.mode').forEach((b, i) => b.setAttribute('aria-pressed', i === mode));
     document.querySelectorAll('.rchip').forEach(b => b.setAttribute('aria-pressed', b.dataset.r === range));
+    document.querySelectorAll('.speed-btn').forEach(b => b.setAttribute('aria-pressed', b.dataset.speed === autoSpeed));
   }
 
   function setPanels(resultShown) {
@@ -505,7 +534,7 @@
     renderMain();
     speak(P[list[idx]][1], () => {
       if (g !== gen) return;
-      later(AUTO_WAIT_MS, g, () => {
+      later(AUTO_WAIT_MS[autoSpeed], g, () => {
         if (idx >= list.length - 1) { finishAuto(); return; }
         idx++;
         autoStep();
@@ -613,6 +642,12 @@
   $('btn-next').addEventListener('click', () => goLearn(1));
   $('btn-auto').addEventListener('click', startAuto);
   $('btn-stop').addEventListener('click', stopAuto);
+  document.querySelectorAll('.speed-btn').forEach(b => {
+    b.addEventListener('click', () => {
+      autoSpeed = b.dataset.speed;
+      updateButtons();
+    });
+  });
   $('choices').addEventListener('click', e => {
     const b = e.target.closest('button[data-k]');
     if (b) onChoose(Number(b.dataset.k));

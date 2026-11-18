@@ -167,6 +167,22 @@
   @media (prefers-reduced-motion: reduce) {
     * { transition: none !important; }
   }
+.back-button {
+  display: inline-block;
+  padding: 10px 18px;
+  margin: 10px;
+  background: #eef3f8;
+  color: #34516d;
+  text-decoration: none;
+  font-size: 16px;
+  font-weight: bold;
+  border-radius: 12px;
+  border: 1px solid #d5e0ec;
+}
+
+.back-button:hover {
+  background: #dceaff;
+}
 </style>
 </head>
 <body>
@@ -202,6 +218,9 @@
     <input type="range" id="interval" min="0" max="15" step="1" value="1" aria-label="まつ時間（秒）">
     <output id="interval-out">1びょう</output>
   </label>
+<a href="https://kato-yoshimi.github.io/kumon/" class="back-button">
+  ← もくじにもどる
+</a>
 </div>
 
 <script>

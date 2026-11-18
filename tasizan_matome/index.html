@@ -1,209 +1,529 @@
-<!doctype html>
+<!DOCTYPE html>
 <html lang="ja">
 <head>
-<meta charset="utf-8">
-<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
-<meta name="theme-color" content="#f7f8fb">
-<title>数のまとまりトレーニング</title>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>たしざんのれんしゅう</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Klee+One:wght@400;600&display=swap" rel="stylesheet">
 <style>
-:root{--ink:#202534;--muted:#697386;--line:#e4e8ef;--green:#27865c;--orange:#e5a33a;--blue:#4b82c3;--paper:#fff;--bg:#f7f8fb;--red:#c94b4b}
-*{box-sizing:border-box}
-body{margin:0;background:var(--bg);color:var(--ink);font-family:system-ui,-apple-system,"Noto Sans JP",sans-serif}
-main{width:min(720px,100%);margin:0 auto;padding:22px 16px 36px}
-header{text-align:center;margin:8px 0 22px}
-h1{font-size:clamp(24px,5vw,32px);margin:0 0 7px}
-.sub{color:var(--muted);font-size:14px}
-.panel{background:var(--paper);border:1px solid var(--line);border-radius:20px;padding:20px;box-shadow:0 5px 20px #25324a0a}
-.modes{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:10px;margin-bottom:16px}
-.mode{border:1px solid var(--line);border-radius:14px;background:white;padding:14px 12px;text-align:left;cursor:pointer;color:var(--ink);font:inherit}
-.mode strong{display:block;font-size:16px;margin-bottom:4px}
-.mode span{font-size:12px;color:var(--muted)}
-.mode.active{border:2px solid var(--green);background:#f1faf5;padding:13px 11px}
-.topline{display:flex;justify-content:space-between;align-items:center;gap:10px;margin-bottom:16px;color:var(--muted);font-size:13px}
-.progress{height:7px;background:#edf0f4;border-radius:99px;overflow:hidden;margin-bottom:22px}
-.progress>div{height:100%;width:0;background:var(--green);transition:width .2s}
-.prompt{text-align:center;font-size:clamp(25px,6vw,38px);font-weight:750;letter-spacing:.02em;margin:8px 0 18px;min-height:52px}
-.hint{text-align:center;color:var(--muted);font-size:14px;margin:-8px 0 18px}
-.visual{min-height:112px;display:flex;align-items:center;justify-content:center;gap:8px;flex-wrap:wrap;padding:12px 6px 18px}
-.group{display:flex;align-items:center;justify-content:center;gap:5px;flex-wrap:wrap}
-.dot{width:clamp(21px,5vw,30px);height:clamp(21px,5vw,30px);border-radius:50%;display:inline-block;flex:none}
-.green{background:var(--green)}.orange{background:var(--orange)}.blue{background:var(--blue)}.pale{background:#dce2ea}
-.plus{font-size:22px;font-weight:700;color:var(--muted);padding:0 3px}
-.tenframes{display:flex;flex-direction:column;gap:7px;width:min(310px,100%)}
-.frame{display:grid;grid-template-columns:repeat(5,1fr);gap:5px}
-.cell{aspect-ratio:1;border:2px solid #dce2ea;border-radius:8px;display:flex;align-items:center;justify-content:center}
-.cell .dot{width:70%;height:auto;aspect-ratio:1}
-.answers{display:grid;grid-template-columns:repeat(4,1fr);gap:10px;margin-top:8px}
-.answer{min-height:58px;border:1px solid var(--line);border-radius:13px;background:white;color:var(--ink);font-size:23px;font-weight:700;cursor:pointer}
-.answer:active{transform:scale(.98)}
-.answer:disabled{cursor:default;opacity:.8}
-.feedback{margin-top:16px;padding:13px 15px;border-radius:13px;background:#f3f5f8;line-height:1.65;font-size:15px}
-.feedback.good{background:#eef8f1;color:#216b49}
-.feedback.bad{background:#fff5eb;color:#784b19}
-.actions{display:flex;gap:10px;margin-top:16px}
-button.primary,button.secondary{border:0;border-radius:13px;padding:14px 16px;font:inherit;font-weight:700;cursor:pointer}
-.primary{background:var(--green);color:white;flex:1}
-.secondary{background:#eef1f5;color:var(--ink)}
-.hidden{display:none!important}
-.finish{text-align:center;padding:24px 8px}
-.finish h2{font-size:27px;margin:0 0 8px}
-.finish p{color:var(--muted);line-height:1.7}
-.smallnote{font-size:12px;color:var(--muted);text-align:center;margin-top:18px}
-@media(max-width:420px){main{padding:16px 12px 28px}.panel{padding:15px}.mode{padding:12px 10px}.answers{gap:7px}.answer{min-height:54px}}
+  :root {
+    --bg: #e9f1f7;
+    --card: #ffffff;
+    --ink: #1b2a41;
+    --navy: #23395b;
+    --teal: #2a9d8f;
+    --teal-ink: #1f7f74;
+    --amber: #f2b134;
+    --amber-ink: #c27d00;
+    --green: #3c9d5d;
+    --red: #d1495b;
+    --muted: #6b7a90;
+    --disabled: #c9d3de;
+  }
+  * { box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
+  html, body { height: 100%; margin: 0; }
+  body {
+    background: var(--bg);
+    color: var(--ink);
+    font-family: "Klee One", "UD デジタル 教科書体 N-R", "UD Digi Kyokasho N-R", "Yu Kyokasho", "Hiragino Maru Gothic ProN", "Noto Sans JP", sans-serif;
+    font-weight: 600;
+    user-select: none;
+    -webkit-user-select: none;
+  }
+  #app {
+    height: 100dvh;
+    max-width: 640px;
+    margin: 0 auto;
+    padding: calc(10px + env(safe-area-inset-top, 0px)) 14px calc(12px + env(safe-area-inset-bottom, 0px));
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+  }
+
+  /* ===== 進みぐあい ===== */
+  .top { display: flex; align-items: center; gap: 12px; }
+  .bar { flex: 1; height: 12px; background: #fff; border-radius: 6px; overflow: hidden; border: 2px solid var(--navy); }
+  .bar > i { display: block; height: 100%; width: 0; background: var(--amber); transition: width .25s; }
+  .count { font-size: 1.15rem; min-width: 4.5em; text-align: right; font-variant-numeric: tabular-nums; }
+
+  /* ===== カード ===== */
+  .card {
+    flex: 1;
+    min-height: 0;
+    container-type: size;
+    background: var(--card);
+    border: 4px solid var(--navy);
+    border-radius: 24px;
+    overflow: hidden;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+  }
+  .ttl { font-size: .95rem; color: var(--muted); padding-top: 8px; }
+  .eq {
+    font-size: min(calc(92cqw / var(--n, 9) / .62), 12cqh);
+    line-height: 1.15;
+    white-space: nowrap;
+    margin-top: 1cqh;
+  }
+  .c1 { color: var(--teal-ink); }
+  .c2 { color: var(--amber-ink); }
+  .blank { display: inline-block; min-width: 1.1em; text-align: center; border-bottom: .07em dashed var(--navy); }
+  .cap { font-size: min(5.5cqh, 6.5cqw); color: var(--navy); min-height: 1.3em; margin-top: .5cqh; white-space: nowrap; }
+  .vis { flex: 1; min-height: 0; width: 100%; padding: 1cqh 3cqw 2cqh; }
+  .vis svg { width: 100%; height: 100%; display: block; }
+
+  /* ブロック図 */
+  .cell { fill: #f5f8fc; stroke: #b8c6d8; stroke-width: .04; }
+  .frame { fill: none; stroke: var(--navy); stroke-width: .09; }
+  .frame.done { stroke: var(--green); stroke-width: .17; }
+  .d { transition: transform .9s ease-in-out; }
+  .d-base { fill: var(--teal); }
+  .d-other { fill: var(--amber); }
+  .d.mv { stroke: var(--navy); stroke-width: .08; }
+  .ghost { fill: none; stroke: var(--amber-ink); stroke-width: .06; stroke-dasharray: .16 .12; }
+  .slot { fill: none; stroke: none; }
+  .slot.hl {
+    fill: rgba(242, 177, 52, .18); stroke: var(--navy); stroke-width: .07; stroke-dasharray: .2 .14;
+    animation: pulse 1s ease-in-out infinite;
+  }
+  @keyframes pulse { 50% { stroke-opacity: .3; fill-opacity: .4; } }
+  .pop { transform-box: fill-box; transform-origin: center; animation: pop .35s ease-out both; }
+  @keyframes pop { from { transform: scale(.2); opacity: 0; } to { transform: none; opacity: 1; } }
+
+  .note { margin: 0; font-size: .85rem; color: var(--muted); text-align: center; min-height: 1.2em; }
+
+  /* ===== ボタン ===== */
+  .modes { display: grid; grid-template-columns: repeat(4, 1fr); gap: 8px; }
+  .pad { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; }
+  button {
+    font: inherit;
+    font-size: 1.35rem;
+    border: 0;
+    border-radius: 18px;
+    min-height: 56px;
+    padding: 6px 10px;
+    color: #fff;
+    cursor: pointer;
+    box-shadow: 0 4px 0 rgba(0,0,0,.22);
+    transition: transform .06s, box-shadow .06s;
+  }
+  button:active:not(:disabled) { transform: translateY(3px); box-shadow: 0 1px 0 rgba(0,0,0,.22); }
+  button:focus-visible { outline: 4px solid var(--amber); outline-offset: 2px; }
+  button:disabled { background: var(--disabled) !important; color: #fff; box-shadow: none; cursor: default; }
+  .mode {
+    min-height: 50px; font-size: 1.7rem; padding: 0;
+    background: #fff; color: var(--navy); border: 3px solid var(--navy); box-shadow: none;
+  }
+  .mode[aria-pressed="true"] { background: var(--navy); color: #fff; }
+  .b-prev { background: #fff; color: var(--navy); border: 3px solid var(--navy); }
+  .b-prev:disabled { border-color: var(--disabled); color: var(--disabled); background: #fff !important; }
+  .b-next { background: var(--navy); }
+  .b-auto { background: var(--green); }
+  .b-stop { background: var(--red); }
+
+  .interval {
+    display: flex; align-items: center; gap: 10px;
+    background: #fff; border-radius: 18px; padding: 6px 14px;
+    border: 2px solid var(--navy);
+    font-size: 1.1rem;
+  }
+  .interval input { flex: 1; min-width: 0; height: 32px; accent-color: var(--navy); }
+  .interval output { min-width: 3.6em; text-align: right; font-variant-numeric: tabular-nums; }
+
+  @media (max-height: 620px) {
+    #app { gap: 5px; }
+    button { min-height: 44px; font-size: 1.1rem; }
+    .mode { min-height: 40px; font-size: 1.4rem; }
+    .interval { padding: 2px 12px; }
+  }
+  @media (prefers-reduced-motion: reduce) {
+    * { transition: none !important; animation: none !important; }
+  }
+.back-button {
+  display: inline-block;
+  padding: 10px 18px;
+  margin: 10px;
+  background: #eef3f8;
+  color: #34516d;
+  text-decoration: none;
+  font-size: 16px;
+  font-weight: bold;
+  border-radius: 12px;
+  border: 1px solid #d5e0ec;
+}
+
+.back-button:hover {
+  background: #dceaff;
+}
 </style>
 </head>
 <body>
-<main>
-<header>
-  <h1>数のまとまりトレーニング</h1>
-  <div class="sub">見て、分けて、10を作ろう</div>
-</header>
-
-<section class="modes" aria-label="トレーニングを選ぶ">
-  <button class="mode active" data-mode="1"><strong>① 数の分解</strong><span>0～5の組み合わせ</span></button>
-  <button class="mode" data-mode="2"><strong>② 5の塊</strong><span>5と残りに分ける</span></button>
-  <button class="mode" data-mode="3"><strong>③ 10を作る</strong><span>10のまとまりを作る</span></button>
-  <button class="mode" data-mode="4"><strong>④ 足し算</strong><span>繰り上がりのある計算</span></button>
-</section>
-
-<section class="panel" id="game">
-  <div class="topline"><span id="modeName">① 数の分解</span><span id="count">1 / 5 問</span></div>
-  <div class="progress"><div id="bar"></div></div>
-  <div class="prompt" id="prompt">4 は 1 と □</div>
-  <div class="hint" id="hint">□に入る数を選ぼう</div>
-  <div class="visual" id="visual"></div>
-  <div class="answers" id="answers"></div>
-  <div class="feedback hidden" id="feedback" aria-live="polite"></div>
-  <div class="actions">
-    <button class="secondary" id="speak">🔊 もう一度読む</button>
-    <button class="primary hidden" id="next">次の問題</button>
+<div id="app">
+  <div class="top">
+    <div class="bar"><i id="bar"></i></div>
+    <div class="count" id="count">- / -</div>
   </div>
-</section>
 
-<section class="panel finish hidden" id="finish">
-  <h2>5問おわり！</h2>
-  <p id="finishText">よく取り組んだね。</p>
-  <button class="primary" id="again">もう一度あそぶ</button>
-</section>
-<div class="smallnote">急がなくて大丈夫。数のまとまりを見つけよう。</div>
-</main>
+  <main class="card">
+    <div class="ttl" id="ttl"></div>
+    <div class="eq" id="eq"></div>
+    <div class="cap" id="cap"></div>
+    <div class="vis" id="vis"></div>
+  </main>
+  <p class="note" id="note"></p>
+
+  <div class="modes" id="modes">
+    <button class="mode" data-m="0" aria-label="1 5のぶんかい">①</button>
+    <button class="mode" data-m="1" aria-label="2 5のかたまり">②</button>
+    <button class="mode" data-m="2" aria-label="3 10のくみあわせ">③</button>
+    <button class="mode" data-m="3" aria-label="4 たしざん">④</button>
+  </div>
+
+  <div class="pad">
+    <button class="b-prev" id="btn-prev">◀ まえへ</button>
+    <button class="b-next" id="btn-next">つぎへ ▶</button>
+    <button class="b-auto" id="btn-auto">▶ じどう</button>
+    <button class="b-stop" id="btn-stop">■ とめる</button>
+  </div>
+
+  <label class="interval">
+    <span>まつ</span>
+    <input type="range" id="interval" min="0" max="15" step="1" value="2" aria-label="まつ時間（秒）">
+    <output id="interval-out">2びょう</output>
+  </label>
+<body>
+
+<a href="https://kato-yoshimi.github.io/kumon/" class="back-button">
+  ← もくじにもどる
+</a>
+
+<!-- ここから既存の学習画面 -->
+</div>
+
 <script>
-(() => {
+  // ===== 問題データ =====
+  // ①〜③: [ぜんたい, さいしょのかず]（のこりは「ぜんたい − さいしょのかず」）
+  // ④   : [たされる数, たす数]
+  const MODES = [
+    { title: '① 5の ぶんかい',     rows: 1, probs: [[5,3],[5,1],[5,2],[5,4]] },
+    { title: '② 5の かたまり',     rows: 2, probs: [[6,5],[7,5],[8,5],[9,5]] },
+    { title: '③ 10の くみあわせ',  rows: 2, probs: [[10,1],[10,2],[10,3],[10,4],[10,5]] },
+    { title: '④ たしざん（10を つくる）', rows: 2,
+      probs: [[7,5],[8,5],[6,7],[8,6],[9,5],[7,6],[9,4],[8,7],[9,6],[8,8],[9,7],[9,8],[9,9]] }
+  ];
+  const NUM = ['ぜろ','いち','に','さん','よん','ご','ろく','なな','はち','きゅう','じゅう',
+               'じゅういち','じゅうに','じゅうさん','じゅうよん','じゅうご','じゅうろく','じゅうなな','じゅうはち'];
+  const rd = n => NUM[n];            // 読み上げ用（数字をひらがなにする）
+  const HINT = '「つぎへ」を おすと こたえが でるよ';
+  const SPEECH_RATE = 0.85;
+  const R = 0.36;                    // ●の半径
+
+  // ===== 状態 =====
+  let mode = 0, idx = 0;
+  let phase = 'q';                   // 'q' = 問題を出している / 'a' = 答えを出している
+  let revealing = false;             // 答えのアニメーション中
+  let auto = false;
+  let gen = 0;                       // これを増やすと、待機中の処理がすべて無効になる
+  let timer = null;
+  let speakToken = 0;
+  let cur4 = null;                   // ④の問題の計算結果
+
   const $ = id => document.getElementById(id);
-  const modeNames = {1:"① 数の分解",2:"② 5の塊",3:"③ 10を作る",4:"④ 足し算"};
-  const hardSums = [[7,5],[8,5],[6,7],[8,6],[9,5],[7,6],[9,4],[8,7],[9,6],[8,8],[9,7],[9,8],[9,9]];
-  let mode=1, qIndex=0, current=null, locked=false, correctCount=0, used=[];
-  const shuffle = arr => [...arr].sort(()=>Math.random()-.5);
-  const pick = arr => arr[Math.floor(Math.random()*arr.length)];
-  const speak = text => {
-    if (!("speechSynthesis" in window)) return;
+  const el = {
+    ttl: $('ttl'), eq: $('eq'), cap: $('cap'), vis: $('vis'), count: $('count'), bar: $('bar'), note: $('note'),
+    prev: $('btn-prev'), next: $('btn-next'), auto: $('btn-auto'), stop: $('btn-stop'),
+    interval: $('interval'), out: $('interval-out')
+  };
+  const modeBtns = [...document.querySelectorAll('.mode')];
+  const last = () => MODES[mode].probs.length - 1;
+  const intervalMs = () => Number(el.interval.value) * 1000;
+
+  // ===== 音声 =====
+  function speak(text, done) {
+    const token = ++speakToken;
+    let finished = false;
+    const finish = () => {
+      if (finished) return;
+      finished = true;
+      if (token === speakToken && done) done();
+    };
+    if (!('speechSynthesis' in window)) { setTimeout(finish, 1500); return; }
     window.speechSynthesis.cancel();
     const u = new SpeechSynthesisUtterance(text);
-    u.lang = "ja-JP"; u.rate = 0.88;
+    u.lang = 'ja-JP';
+    u.rate = SPEECH_RATE;
+    const jp = window.speechSynthesis.getVoices().find(v => v.lang && v.lang.toLowerCase().startsWith('ja'));
+    if (jp) u.voice = jp;
+    u.onend = finish;
+    u.onerror = finish;
     window.speechSynthesis.speak(u);
-  };
-  function dots(n, color="green") {
-    return `<div class="group">${Array.from({length:n},()=>`<i class="dot ${color}"></i>`).join("")}</div>`;
+    setTimeout(finish, 6000);
   }
-  function groupedDots(a,b,ca="green",cb="orange") {
-    return `<div class="group">${dots(a,ca)}<span class="plus">＋</span>${dots(b,cb)}</div>`;
+  function unlockSpeech() { // iPhone/iPad：ボタンを押した瞬間に一度しゃべらせておく
+    if (!('speechSynthesis' in window)) return;
+    const u = new SpeechSynthesisUtterance(' ');
+    u.volume = 0;
+    window.speechSynthesis.speak(u);
   }
-  function tenFrame(first, fillToTen, remainder) {
-    let cells=[];
-    for(let i=0;i<20;i++){
-      let color="";
-      if(i<first) color="green";
-      else if(i<first+fillToTen) color="orange";
-      else if(i<10+remainder) color="blue";
-      cells.push(`<div class="cell">${color?`<i class="dot ${color}"></i>`:""}</div>`);
+  function cancelAll() {
+    gen++;
+    clearTimeout(timer);
+    speakToken++;
+    if ('speechSynthesis' in window) window.speechSynthesis.cancel();
+  }
+  function later(ms, g, fn) {
+    clearTimeout(timer);
+    timer = setTimeout(() => { if (g === gen) fn(); }, ms);
+  }
+
+  // 「は」は助詞だと「わ」と読ませたいので、読み上げ文は「わ」と書く
+  function qText() {
+    const p = MODES[mode].probs[idx];
+    return mode < 3 ? `${rd(p[0])}わ、${rd(p[1])}と、いくつ？` : `${rd(p[0])}たす${rd(p[1])}わ？`;
+  }
+  function ansText() {
+    const [t, k] = MODES[mode].probs[idx];
+    return `${rd(t)}わ、${rd(k)}と、${rd(t - k)}。`;
+  }
+  function lines4(c) {
+    return [null,
+      `${rd(c.base)}わ、あと、${rd(c.n)}で、じゅう。`,
+      `${rd(c.other)}を、${rd(c.n)}と、${rd(c.r)}に、わける。`,
+      `${rd(c.n)}を、${rd(c.base)}に、たす。`,
+      `じゅうと、${rd(c.r)}で、${rd(c.total)}。`,
+      `${rd(c.a)}たす${rd(c.b)}わ、${rd(c.total)}。`];
+  }
+
+  // ===== ブロック図（SVG） =====
+  const cellPos = (x0, y0, i) => ({ x: x0 + (i % 5), y: y0 + Math.floor(i / 5) });
+
+  function frame(x0, y0, rows, id) {
+    let s = '';
+    for (let i = 0; i < rows * 5; i++) {
+      const c = cellPos(x0, y0, i);
+      s += `<rect class="cell" x="${c.x}" y="${c.y}" width="1" height="1"/>`;
     }
-    return `<div class="tenframes"><div class="frame">${cells.slice(0,10).join("")}</div><div class="frame">${cells.slice(10).join("")}</div></div>`;
+    return s + `<rect class="frame"${id ? ` id="${id}"` : ''} x="${x0}" y="${y0}" width="5" height="${rows}" rx=".12"/>`;
   }
-  function choices(answer,min=0,max=18) {
-    const set=new Set([answer]);
-    while(set.size<4){
-      let n=answer+pick([-3,-2,-1,1,2,3]);
-      if(n>=min&&n<=max)set.add(n);
-    }
-    return shuffle([...set]);
+  function dot(c, cls, id, style) {
+    return `<circle class="d ${cls}"${id ? ` id="${id}"` : ''} cx="${c.x + 0.5}" cy="${c.y + 0.5}" r="${R}"${style ? ` style="${style}"` : ''}/>`;
   }
-  function makeQuestion() {
-    if(mode===1){
-      const total=pick([2,3,4,5]);
-      const part=1+Math.floor(Math.random()*(total-1));
-      return {a:total,b:part,answer:total-part,question:`${total} は ${part} と □`,speech:`${total}は${part}と、いくつ？`,hint:"□に入る数を選ぼう",
-        visual:groupedDots(part,total-part),explain:`${total}は${part}と${total-part}。合わせると${total}になるよ。`};
+
+  // ①②③：しっているぶんは色つき、わからないぶんは点線の●。答えで●が色づく
+  function buildSimple(p, answered, animate) {
+    const rows = MODES[mode].rows, t = p[0], k = p[1];
+    let s = `<svg viewBox="0 0 6 ${rows + 1}" preserveAspectRatio="xMidYMid meet" role="img" aria-label="${t}は${k}と${t - k}">`;
+    s += frame(0.5, 0.5, rows);
+    for (let i = 0; i < t; i++) {
+      const c = cellPos(0.5, 0.5, i);
+      if (i < k) s += dot(c, 'd-base');
+      else if (answered) s += dot(c, 'd-other' + (animate ? ' pop' : ''), '', animate ? `animation-delay:${(i - k) * 140}ms` : '');
+      else s += `<circle class="ghost" cx="${c.x + 0.5}" cy="${c.y + 0.5}" r="${R}"/>`;
     }
-    if(mode===2){
-      const total=pick([6,7,8,9]), rest=total-5;
-      return {a:total,b:5,answer:rest,question:`${total} は 5 と □`,speech:`${total}は5と、いくつ？`,hint:"5の塊のほかに、いくつある？",
-        visual:groupedDots(5,rest),explain:`${total}は、5と${rest}。緑の5個と、オレンジの${rest}個だよ。`};
-    }
-    if(mode===3){
-      const a=pick([6,7,8,9]), b=pick([11-a,12-a,13-a,14-a,15-a].filter(x=>x>0&&x<=9));
-      const fill=10-a, remainder=b-fill, answer=a+b;
-      return {a,b,answer,question:`${a} ＋ ${b} ＝ □`,speech:`${a}たす${b}は、いくつ？10を作って考えよう。`,hint:`${a}にあと${fill}で10。${b}を分けてみよう。`,
-        visual:tenFrame(a,fill,remainder),explain:`${a}に${fill}を足すと10。${b}は${fill}と${remainder}に分けられるから、10と${remainder}で${answer}だよ。`};
-    }
-    let pair=pick(hardSums);
-    return {a:pair[0],b:pair[1],answer:pair[0]+pair[1],question:`${pair[0]} ＋ ${pair[1]} ＝ □`,speech:`${pair[0]}たす${pair[1]}は、いくつ？`,hint:"ドットのまとまりを見て考えよう。",
-      visual:tenFrame(pair[0],Math.min(pair[1],10-pair[0]),Math.max(0,pair[0]+pair[1]-10)),
-      explain:`${pair[0]}は10まであと${10-pair[0]}。${pair[1]}から${10-pair[0]}を使うと10になり、${pair[1]-(10-pair[0])}が残るよ。答えは${pair[0]+pair[1]}。`};
+    return s + '</svg>';
   }
-  function render() {
-    $("modeName").textContent=modeNames[mode];
-    $("count").textContent=`${qIndex+1} / 5 問`;
-    $("bar").style.width=`${qIndex/5*100}%`;
-    $("prompt").textContent=current.question;
-    $("hint").textContent=current.hint;
-    $("visual").innerHTML=current.visual;
-    $("feedback").className="feedback hidden";
-    $("next").classList.add("hidden");
-    $("answers").innerHTML="";
-    locked=false;
-    choices(current.answer,0, mode===1?5:mode===2?4:18).forEach(n=>{
-      const btn=document.createElement("button");
-      btn.className="answer";btn.textContent=n;
-      btn.addEventListener("click",()=>check(n,btn));
-      $("answers").appendChild(btn);
-    });
-    speak(current.speech);
+
+  // ④：大きいほうの数を「10のわく」に入れて、あと何こで10かを見せる
+  function calc4(p) {
+    const a = p[0], b = p[1];
+    const baseIsFirst = a >= b;
+    const base = baseIsFirst ? a : b, other = baseIsFirst ? b : a;
+    const n = 10 - base;
+    return { a, b, baseIsFirst, base, other, n, r: other - n, total: a + b };
   }
-  function check(n,btn) {
-    if(locked)return;
-    if(n===current.answer){
-      locked=true;correctCount++;
-      $("feedback").className="feedback good";
-      $("feedback").innerHTML=`<strong>正解！</strong><br>${current.explain}`;
-      [...$("answers").children].forEach(b=>b.disabled=true);
-      $("next").classList.remove("hidden");
-      $("next").textContent=qIndex===4?"結果を見る":"次の問題";
+  const A0 = { x: 0.5, y: 0.4 }, B0 = { x: 0.5, y: 3.4 };
+
+  function build4(c) {
+    let s = `<svg viewBox="0 0 6 5.8" preserveAspectRatio="xMidYMid meet" role="img" aria-label="${c.a}たす${c.b}">`;
+    s += frame(A0.x, A0.y, 2, 'frameA') + frame(B0.x, B0.y, 2, 'frameB');
+    for (let i = c.base; i < 10; i++) {                 // あと何こ入るかの空きわく
+      const q = cellPos(A0.x, A0.y, i);
+      s += `<rect class="slot" id="slot${i}" x="${q.x + 0.06}" y="${q.y + 0.06}" width=".88" height=".88" rx=".12"/>`;
+    }
+    for (let i = 0; i < c.base; i++) s += dot(cellPos(A0.x, A0.y, i), 'd-base');
+    for (let i = 0; i < c.other; i++) s += dot(cellPos(B0.x, B0.y, i), 'd-other', 'ob' + i);
+    return s + '</svg>';
+  }
+
+  function setEq(html) {
+    el.eq.innerHTML = html;
+    el.eq.style.setProperty('--n', Math.max(6, el.eq.textContent.length));
+  }
+
+  // ④の見せ方を段階（0〜5）で切りかえる。0=問題 … 5=答え
+  function applyStage(stage) {
+    const c = cur4, root = el.vis;
+    for (let i = c.base; i < 10; i++) {
+      const sl = root.querySelector('#slot' + i);
+      if (!sl) continue;
+      sl.classList.toggle('hl', stage >= 1 && stage < 3);
+      sl.style.display = stage >= 3 ? 'none' : '';
+    }
+    for (let j = 0; j < c.n; j++) {
+      const mi = c.other - c.n + j;
+      const m = root.querySelector('#ob' + mi);
+      if (!m) continue;
+      m.classList.toggle('mv', stage >= 2);
+      if (stage >= 3) {
+        const to = cellPos(A0.x, A0.y, c.base + j), from = cellPos(B0.x, B0.y, mi);
+        m.style.transform = `translate(${to.x - from.x}px, ${to.y - from.y}px)`;
+      } else m.style.transform = '';
+    }
+    $('frameA').classList.toggle('done', stage >= 4);
+
+    const A = `<span class="${c.baseIsFirst ? 'c1' : 'c2'}">${c.a}</span>`;
+    const B = `<span class="${c.baseIsFirst ? 'c2' : 'c1'}">${c.b}</span>`;
+    const head = `${A} + ${B} = `;
+    if (stage < 4) setEq(head + '<span class="blank">?</span>');
+    else if (stage === 4) setEq(head + `<span class="c1">10</span> + <span class="c2">${c.r}</span>`);
+    else setEq(head + `<b>${c.total}</b>`);
+    el.cap.textContent = ['',
+      `${c.base}は あと${c.n}で 10`,
+      `${c.other}を ${c.n}と ${c.r}に わける`,
+      `${c.n}を ${c.base}に たす`,
+      `10と ${c.r}で ${c.total}`,
+      `こたえは ${c.total}！`][stage];
+  }
+
+  // ===== 表示 =====
+  function render(animate) {
+    const m = MODES[mode], p = m.probs[idx];
+    el.ttl.textContent = m.title;
+    if (mode < 3) {
+      const t = p[0], k = p[1], u = t - k, ans = phase === 'a';
+      setEq(`${t} = <span class="c1">${k}</span> + ` + (ans ? `<span class="c2">${u}</span>` : '<span class="c2 blank">?</span>'));
+      el.cap.textContent = ans ? `${k}と ${u}で ${t}` : '';
+      el.vis.innerHTML = buildSimple(p, ans, animate);
     } else {
-      $("feedback").className="feedback bad";
-      $("feedback").innerHTML=`<strong>おしい！</strong><br>${current.explain}<br>ドットのまとまりを見ながら、もう一度選んでみよう。`;
-      btn.disabled=true;
+      cur4 = calc4(p);
+      el.vis.innerHTML = build4(cur4);
+      applyStage(phase === 'a' && !animate ? 5 : 0);
+    }
+    el.count.textContent = `${idx + 1} / ${m.probs.length}`;
+    el.bar.style.width = ((idx + 1) / m.probs.length * 100) + '%';
+    el.note.textContent = phase === 'q' ? HINT : '';
+    updateButtons();
+  }
+
+  function updateButtons() {
+    el.prev.disabled = idx === 0 && (phase === 'q' || auto);
+    el.next.disabled = idx === last() && (auto || (phase === 'a' && !revealing));
+    el.auto.disabled = auto;
+    el.stop.disabled = !auto;
+    modeBtns.forEach((b, i) => b.setAttribute('aria-pressed', i === mode));
+  }
+
+  // ===== 問題を出す／答えを出す =====
+  function showQuestion(speakIt) {
+    phase = 'q'; revealing = false;
+    render(false);
+    if (speakIt) speak(qText());
+  }
+
+  function revealAnswer(g, done) {
+    phase = 'a'; revealing = true;
+    render(true);
+    const finish = () => { revealing = false; updateButtons(); if (done) done(); };
+    if (mode < 3) {
+      speak(ansText(), () => { if (g === gen) finish(); });
+    } else {
+      const lines = lines4(cur4);
+      let s = 1;
+      const step = () => {
+        if (g !== gen) return;
+        if (s > 5) { finish(); return; }
+        applyStage(s);
+        speak(lines[s], () => { if (g === gen) later(350, g, () => { s++; step(); }); });
+      };
+      step();
     }
   }
-  function start(nextMode=mode) {
-    mode=nextMode;qIndex=0;correctCount=0;
-    $("game").classList.remove("hidden");$("finish").classList.add("hidden");
-    document.querySelectorAll(".mode").forEach(b=>b.classList.toggle("active",Number(b.dataset.mode)===mode));
-    current=makeQuestion();render();
+
+  function skipReveal() {          // アニメーションの途中で押されたら、答えまで一気に進める
+    cancelAll();
+    revealing = false; phase = 'a';
+    render(false);
   }
-  function next() {
-    if(qIndex===4){
-      $("game").classList.add("hidden");$("finish").classList.remove("hidden");
-      $("finishText").textContent=`5問中${correctCount}問正解できたよ。最後までよく考えたね。`;
-      return;
-    }
-    qIndex++;current=makeQuestion();render();
+
+  // ===== 手動の操作 =====
+  function onNext() {
+    if (auto) { if (idx < last()) { idx++; autoQ(); } return; }
+    if (revealing) { skipReveal(); return; }
+    if (phase === 'q') { cancelAll(); revealAnswer(gen, null); }      // 答えを見る（問題と答えを読み上げ）
+    else if (idx < last()) { idx++; cancelAll(); showQuestion(true); } // つぎの問題
   }
-  document.querySelectorAll(".mode").forEach(b=>b.addEventListener("click",()=>start(Number(b.dataset.mode))));
-  $("next").addEventListener("click",next);
-  $("speak").addEventListener("click",()=>speak(current.speech));
-  $("again").addEventListener("click",()=>start(mode));
-  start(1);
-})();
+
+  function onPrev() {
+    if (auto) { if (idx > 0) idx--; autoQ(); return; }
+    cancelAll();
+    if (phase === 'a') showQuestion(true);                            // 答え → 同じ問題にもどる
+    else if (idx > 0) { idx--; showQuestion(true); }                  // 問題 → 前の問題
+  }
+
+  function setMode(m) {
+    auto = false;
+    cancelAll();
+    mode = m; idx = 0;
+    showQuestion(true);
+  }
+
+  // ===== 自動 =====
+  function autoQ() {
+    cancelAll();
+    const g = gen;
+    phase = 'q'; revealing = false;
+    render(false);
+    speak(qText(), () => {
+      if (g !== gen) return;
+      later(intervalMs(), g, () => autoA(g));
+    });
+  }
+
+  function autoA(g) {
+    if (g !== gen) return;
+    revealAnswer(g, () => {
+      later(intervalMs(), g, () => {
+        if (idx >= last()) { finishAuto(); return; }
+        idx++;
+        autoQ();
+      });
+    });
+  }
+
+  function startAuto() {
+    if (auto) return;
+    unlockSpeech();
+    auto = true;
+    if (idx === last() && phase === 'a' && !revealing) idx = 0;   // 最後まで終わっていたら最初から
+    autoQ();
+  }
+
+  function stopAuto() {
+    auto = false;
+    cancelAll();
+    if (revealing) { revealing = false; phase = 'a'; render(false); }   // その問題の答えの状態で止まる
+    else updateButtons();
+  }
+
+  function finishAuto() {
+    auto = false;
+    updateButtons();
+    el.note.textContent = 'おしまい！';
+  }
+
+  // ===== イベント =====
+  modeBtns.forEach(b => b.addEventListener('click', () => setMode(Number(b.dataset.m))));
+  el.prev.addEventListener('click', onPrev);
+  el.next.addEventListener('click', onNext);
+  el.auto.addEventListener('click', startAuto);
+  el.stop.addEventListener('click', stopAuto);
+  el.interval.addEventListener('input', () => { el.out.textContent = el.interval.value + 'びょう'; });
+  if ('speechSynthesis' in window) window.speechSynthesis.getVoices();
+
+  render(false);
 </script>
 </body>
 </html>
